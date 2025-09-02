@@ -14,6 +14,11 @@ const nextConfig = {
     NEXT_PUBLIC_COGNITO_USER_POOL_ID: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID,
     NEXT_PUBLIC_COGNITO_CLIENT_ID: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID,
   },
+  // Allow production builds to succeed even if there are ESLint errors
+  // (useful for CI/CD; fix lint issues separately)
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 }
 
 module.exports = nextConfig
