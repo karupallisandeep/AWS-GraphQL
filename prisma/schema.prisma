@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String          @id @default(cuid())
+  email           String          @unique
+  cognito_id      String          @unique
+  first_name      String
+  last_name       String
+  role            UserRole        @default(PUBLIC)
+  created_at      DateTime        @default(now())
+  updated_at      DateTime        @updatedAt
+  businesses      Business[]
+
+  @@map("users")
+}
+
+model Business {
+  id              String          @id @default(cuid())
+  name            String
+  description     String?
+  address         String?
+  city            String?
+  state           String?
+  zip_code        String?
+  phone           String?
+  email           String?
+  website         String?
+  category        String?
+  is_active       Boolean         @default(true)
+  is_claimed      Boolean         @default(true)
+  created_at      DateTime        @default(now())
+  updated_at      DateTime        @updatedAt
+  owner_id        String
+  users           User            @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+  business_images BusinessImage[]
+
+  @@map("businesses")
+}
+
+model BusinessImage {
+  id          String   @id @default(cuid())
+  business_id String
+  image_url   String
+  image_key   String
+  alt_text    String?
+  is_primary  Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  business    Business @relation(fields: [business_id], references: [id], onDelete: Cascade)
+
+  @@map("business_images")
+}
+
+enum UserRole {
+  PUBLIC
+  BUSINESS_OWNER
+  ADMIN
+}

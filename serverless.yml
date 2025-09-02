@@ -1,0 +1,90 @@
+service: business-directory-api
+
+frameworkVersion: '3'
+
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-plugin-typescript
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 3001
+    lambdaPort: 3002
+  esbuild:
+    bundle: false
+    minify: false
+    sourcemap: false
+    target: node18
+    platform: node
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ${env:REGION, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  environment:
+    # Database connection
+    DATABASE_URL: ${env:DATABASE_URL, 'postgresql://placeholder'}
+    
+    # AWS Configuration
+    REGION: ${env:REGION, 'us-east-1'}
+    S3_BUCKET_NAME: ${env:S3_BUCKET_NAME, 'business-directory-images'}
+    
+    # Local development helpers
+    LOCAL_DEV_BYPASS: ${env:LOCAL_DEV_BYPASS, 'false'}
+    
+    # Cognito Authentication
+    COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID, 'placeholder'}
+    COGNITO_CLIENT_ID: ${env:COGNITO_CLIENT_ID, 'placeholder'}
+    JWT_SECRET: ${env:JWT_SECRET, 'placeholder-secret'}
+    
+    # Email Configuration
+    SES_FROM_EMAIL: ${env:SES_FROM_EMAIL, 'noreply@yourdomain.com'}
+    
+    # Frontend URL for CORS
+    FRONTEND_URL: ${env:FRONTEND_URL, 'https://main.dhgo89t11a656.amplifyapp.com'}
+    
+    # Application Environment
+    NODE_ENV: production
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+        - s3:PutObject
+        - s3:DeleteObject
+      Resource: "arn:aws:s3:::${env:S3_BUCKET_NAME, 'business-directory-images'}/*"
+    - Effect: Allow
+      Action:
+        - ses:SendEmail
+        - ses:SendRawEmail
+      Resource: "*"
+
+functions:
+  graphql:
+    handler: src/lambda-with-db.handler
+    timeout: 30
+    memorySize: 512
+    events:
+      - http:
+          path: graphql
+          method: any
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+
+  scheduledInvoiceGeneration:
+    handler: src/jobs/invoice-scheduler-handler.scheduledInvoiceHandler
+    timeout: 300
+    events:
+      - schedule:
+          rate: cron(0 6 1 * ? *)  # Monthly on 1st at 6 AM UTC
+          enabled: true
