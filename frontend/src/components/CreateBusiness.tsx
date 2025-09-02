@@ -77,15 +77,15 @@ export default function CreateBusiness() {
         variables: {
           input: {
             name: formData.name.trim(),
-            description: formData.description.trim() || undefined,
-            category: formData.category.trim() || undefined,
-            address: formData.address.trim() || undefined,
-            city: formData.city.trim() || undefined,
-            state: formData.state.trim() || undefined,
-            zipCode: formData.zipCode.trim() || undefined,
-            phone: formData.phone.trim() || undefined,
-            email: formData.email.trim() || undefined,
-            website: formData.website.trim() || undefined,
+            description: formData.description?.trim() || undefined,
+            category: formData.category?.trim() || undefined,
+            address: formData.address?.trim() || undefined,
+            city: formData.city?.trim() || undefined,
+            state: formData.state?.trim() || undefined,
+            zipCode: formData.zipCode?.trim() || undefined,
+            phone: formData.phone?.trim() || undefined,
+            email: formData.email?.trim() || undefined,
+            website: formData.website?.trim() || undefined,
           }
         },
         context: {
